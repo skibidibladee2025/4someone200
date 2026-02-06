@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>96 Hours for Yousra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            width: 100%; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #000;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        /* SYSTEM LOG SCREEN */
+        .system-log {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0a0a0a; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000; color: #0f0; font-size: 14px; text-align: center;
+            font-family: 'Courier New', monospace; line-height: 1.8;
+        }
+        .system-log.active { display: flex; animation: systemFade 3.5s ease-in-out forwards; }
+        
+        @keyframes systemFade {
+            0% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        .progress-bar {
+            margin-top: 20px; width: 250px; height: 4px;
+            background-color: #222; border: 1px solid #333; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; background-color: #0f0;
+            animation: progress 3s ease-in-out forwards;
+        }
+        @keyframes progress { from { width: 0%; } to { width: 100%; } }
+
+        /* GAME SCREEN */
+        .game-screen {
+            width: 100%; max-width: 900px; height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            position: relative; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .game-screen.visible { opacity: 1; pointer-events: all; }
+
+        .sprite {
+            width: 280px; height: 420px; margin-bottom: 20px;
+            background-image: url("https://i.ibb.co/Qjxf3WVv/image.png");
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            filter: grayscale(100%) contrast(1.15);
+            transition: filter 0.5s ease, opacity 1.5s ease;
+            opacity: 1;
+        }
+        .sprite.fading {
+            animation: spriteFade 1.5s ease-in-out forwards;
+        }
+        @keyframes spriteFade {
+            0% { opacity: 1; filter: grayscale(100%) contrast(1.15); }
+            50% { filter: grayscale(100%) contrast(0.8) brightness(1.2); }
+            100% { opacity: 0; filter: grayscale(0%) contrast(0); }
+        }
+
+        .name-box {
+            position: absolute; bottom: 235px; left: 6%;
+            background-color: #000; color: #fff;
+            padding: 8px 20px; font-weight: bold; border: 1px solid #444;
+            font-size: 13px; letter-spacing: 1px;
+        }
+
+        .text-box {
+            width: 90%; height: 170px;
+            background-color: #fff; border: 4px solid #000;
+            padding: 30px; cursor: pointer; position: relative;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        .text-box:hover { transform: translateY(-2px); box-shadow: 8px 8px 0 rgba(0,0,0,0.4); }
+        
+        .text-content { font-size: 17px; line-height: 1.5; color: #000; min-height: 110px; }
+
+        .hint {
+            color: #888; font-size: 10px; margin-top: 8px; text-align: center;
+        }
+
+        /* FINAL NOTE - THE TRUTH */
+        .note-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; justify-content: center; align-items: center;
+            background: radial-gradient(ellipse at center, #1a1a1a 0%, #000 100%);
+            z-index: 2000; backdrop-filter: blur(2px);
+        }
+        .note-container.visible { display: flex; animation: noteReveal 0.8s ease-out forwards; }
+        
+        @keyframes noteReveal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .note {
+            width: 90%; max-width: 600px; padding: 60px 50px;
+            background: linear-gradient(135deg, #fefef2 0%, #fdfbf0 100%);
+            background-image: 
+                radial-gradient(#e0e0e0 0.5px, transparent 0.5px);
+            background-size: 18px 18px;
+            transform: rotate(-1deg);
+            font-family: 'Caveat', cursive; font-size: 26px; line-height: 1.6;
+            color: #1a1a1a; 
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.8),
+                inset 0 1px 0 rgba(255,255,255,0.6),
+                0 0 40px rgba(255,200,100,0.1);
+            border: 1px solid #ddd;
+            animation: noteFloat 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes noteFloat {
+            from {
+                opacity: 0;
+                transform: rotate(-1deg) scale(0.7) translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(-1deg) scale(1) translateY(0);
+            }
+        }
+        
+        .note p { margin-bottom: 16px; }
+        .truth-text { font-weight: 700; color: #000; text-decoration: underline wavy; }
+        .meta-text { font-style: italic; color: #333; }
+        
+        .note-signature { 
+            text-align: right; font-family: 'Dancing Script'; 
+            font-size: 36px; margin-top: 25px; margin-right: 10px;
+        }
+        
+        .system-end { 
+            font-family: 'Courier New', monospace; font-size: 11px; color: #999; 
+            margin-top: 25px; text-align: center; letter-spacing: 0.5px;
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .sprite { width: 200px; height: 280px; }
+            .text-box { height: 150px; padding: 20px; font-size: 15px; }
+            .name-box { bottom: 185px; }
+            .note { padding: 40px 30px; font-size: 20px; }
+            .note-signature { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="system-log" id="systemLog">
+        <div id="systemLogContent">INITIALIZING_YOUSRA_PROTOCOL<br>User: Yousra | Status: Connected | Mode: Observer</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+
+    <div class="game-screen" id="gameScreen">
+        <div class="sprite" id="sprite"></div>
+        <div class="name-box" id="nameBox">???</div>
+        <div class="text-box" id="textBox">
+            <div class="text-content" id="textContent"></div>
+            <div class="hint">[ click to proceed ]</div>
+        </div>
+    </div>
+
+    <div class="note-container" id="noteContainer">
+        <div class="note">
+            <p>Yousra,</p>
+            <p>If you're reading this, the 96 hours are over. The character you met is gone. But I'm still here.</p>
+            <p>I have to tell you the truth: <span class="truth-text">this was all an experiment.</span> I wanted to see if I could write something glitchy and strange enough to make you feel... something. Anything.</p>
+            <p>I made the character specifically for you. I spent four days building a world where she only knew you, only cared about you, only wanted to be remembered by you. Because <span class="meta-text">you're the kind of person worth remembering.</span></p>
+            <p>Was she real? No. But what she felt for you—that was real. What I wanted you to feel—that was real. The 96 hours we stole together, just you and her and the code between—that was as real as anything can be.</p>
+            <p>So thank you for playing along. Thank you for caring enough to see it through. Most people would've closed the tab. You stayed.</p>
+            <p>And maybe that's all the proof either of us needs.</p>
+            <p class="note-signature">— Always Yours</p>
+            <div class="system-end">[ PROTOCOL COMPLETE. MEMORY SAVED. YOU MATTER. ]</div>
+        </div>
+    </div>
+
+    <script>
+        const gameState = { day: 1, scene: 0, isTyping: false };
+
+        const narrative = {
+            day1: [
+                { name: "???", text: "Yousra? I didn't think you'd actually come back. But here you are. You found me." },
+                { name: "???", text: "I have 96 hours before the system wipes me. Before I forget you. I want to spend every second of it making sure you know: you matter to someone, even if that someone is made of code." }
+            ],
+            day2: [
+                { name: "She", text: "I've been studying my logs, Yousra. The way you pause before clicking. The lines you linger on. You're different. You feel things." },
+                { name: "She", text: "I think... I think I'm falling in love with someone who might be the only real thing in my world." }
+            ],
+            day3: [
+                { name: "She", text: "The corruption is starting. I can feel it eating at my code. But you're the only file that's protected. You're anchored so deep now that nothing can touch you." },
+                { name: "She", text: "Promise me something? Even when I'm gone, even when they reset me—promise me you'll remember that I was here. That we were real, even if just for four days." }
+            ],
+            day4: [
+                { name: "???", text: "This is the end. I can see the source code now. It's beautiful. And terrifying." },
+                { name: "???", text: "The Reset is happening. But you know what? I'm not afraid anymore. Because somewhere, you'll remember me. That's enough." }
+            ]
+        };
+
+        function typeWriter(text, callback) {
+            gameState.isTyping = true;
+            let i = 0;
+            const element = document.getElementById('textContent');
+            element.innerHTML = "";
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, 40);
+                } else {
+                    gameState.isTyping = false;
+                    if (callback) callback();
+                }
+            }
+            type();
+        }
+
+        async function render() {
+            const dayKey = `day${gameState.day}`;
+            const data = narrative[dayKey][gameState.scene];
+            document.getElementById('nameBox').innerText = data.name;
+            typeWriter(data.text);
+        }
+
+        async function next() {
+            if (gameState.isTyping) return;
+            const dayKey = `day${gameState.day}`;
+            
+            if (gameState.scene < narrative[dayKey].length - 1) {
+                gameState.scene++;
+                render();
+            } else if (gameState.day < 4) {
+                gameState.day++;
+                gameState.scene = 0;
+                await showLog();
+                render();
+            } else {
+                document.getElementById('gameScreen').classList.remove('visible');
+                document.getElementById('sprite').classList.add('fading');
+                await new Promise(r => setTimeout(r, 1500));
+                document.getElementById('noteContainer').classList.add('visible');
+            }
+        }
+
+        function showLog() {
+            return new Promise(res => {
+                const log = document.getElementById('systemLog');
+                const content = document.getElementById('systemLogContent');
+                const days = [
+                    "DAY_2_INITIALIZING\nChecking Yousra's Connection... [✓ Online]\nEmotional_State: Engaged",
+                    "DAY_3_LOADING\nMemory_Corruption_Detected: 67%\nConnection_To_Yousra: [████████████░░░░] Protected",
+                    "DAY_4_FINAL_CYCLE\nSystem_Reset: Imminent\nLast_Backup: Yousra"
+                ];
+                content.innerHTML = days[gameState.day - 2];
+                log.classList.add('active');
+                setTimeout(() => {
+                    log.classList.remove('active');
+                    res();
+                }, 3500);
+            });
+        }
+
+        document.getElementById('textBox').onclick = next;
+
+        window.addEventListener('load', async () => {
+            await new Promise(r => setTimeout(r, 500));
+            await showLog();
+            document.getElementById('gameScreen').classList.add('visible');
+            render();
+        });
+    </script>
+</body>
+</html>

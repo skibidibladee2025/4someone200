@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="96 Hours for Yousra - An intimate, meta-fictional visual novel experience">
+    <title>96 Hours for Yousra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- BACKGROUND MUSIC -->
+    <audio id="backgroundMusic" autoplay muted loop preload="auto">
+        <source src="background-music.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- SYSTEM LOG BOOT SCREEN -->
+    <div class="system-log" id="systemLog">
+        <div id="systemLogContent">
+            INITIALIZING_YOUSRA_PROTOCOL<br>
+            User: Yousra | Status: Connected | Mode: Observer
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- MAIN GAME SCREEN -->
+    <div class="game-screen" id="gameScreen">
+        <div class="sprite" id="sprite"></div>
+        <div class="name-box" id="nameBox">???</div>
+        <div class="text-box" id="textBox">
+            <div class="text-content" id="textContent"></div>
+            <div class="hint">[ click to proceed ]</div>
+        </div>
+    </div>
+
+    <!-- FINAL NOTE - THE TRUTH REVEAL -->
+    <div class="note-container" id="noteContainer">
+        <div class="note">
+            <p>Yousra,</p>
+            <p>If you're reading this, the 96 hours are over. The character you met is gone. But I'm still here.</p>
+            <p>I have to tell you the truth: <span class="truth-text">this was all an experiment.</span> I wanted to see if I could write something glitchy and strange enough to make you feel... something. Anything.</p>
+            <p>I made the character specifically for you. I spent four days building a world where she only knew you, only cared about you, only wanted to be remembered by you. Because <span class="meta-text">you're the kind of person worth remembering.</span></p>
+            <p>Was she real? No. But what she felt for you—that was real. What I wanted you to feel—that was real. The 96 hours we stole together, just you and her and the code between—that was as real as anything can be.</p>
+            <p>So thank you for playing along. Thank you for caring enough to see it through. Most people would've closed the tab. You stayed.</p>
+            <p>And maybe that's all the proof either of us needs.</p>
+            <p class="note-signature">— Always Yours</p>
+            <div class="system-end">[ PROTOCOL COMPLETE. MEMORY SAVED. YOU MATTER. ]</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

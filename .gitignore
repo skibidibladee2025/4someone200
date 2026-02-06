@@ -1,0 +1,25 @@
+# 96 Hours for Yousra - Ignore Rules
+
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build outputs
+dist/
+build/
+
+# Environment
+.env
+.env.local
