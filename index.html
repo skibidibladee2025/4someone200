@@ -11,7 +11,7 @@
 <body>
     <!-- BACKGROUND MUSIC -->
     <audio id="backgroundMusic" autoplay muted loop preload="auto">
-        <source src="background-music.mp3" type="audio/mpeg">
+        <source src="6 little eggs.mp3" type="audio/mpeg">
     </audio>
 
     <!-- SYSTEM LOG BOOT SCREEN -->
@@ -27,29 +27,99 @@
 
     <!-- MAIN GAME SCREEN -->
     <div class="game-screen" id="gameScreen">
+        <!-- Day Indicator -->
+        <div class="day-indicator-display" id="dayIndicator">Day 1 | Scene 1/2</div>
+        
+        <!-- Guilt Meter -->
+        <div class="guilt-meter" id="guiltMeter">
+            <div>COMPLICITY</div>
+            <div class="guilt-bar">
+                <div class="guilt-fill" id="guiltFill"></div>
+            </div>
+        </div>
+        
+        <!-- Audio Toggle -->
+        <button class="audio-toggle" id="audioToggle" title="Toggle Music">🔊</button>
+        
+        <!-- Skip Text Button -->
+        <button class="skip-text" id="skipText" title="Skip Text (S)">⏭</button>
+
         <div class="sprite" id="sprite"></div>
         <div class="name-box" id="nameBox">???</div>
         <div class="text-box" id="textBox">
             <div class="text-content" id="textContent"></div>
-            <div class="hint">[ click to proceed ]</div>
+            <div class="hint">[ click or press SPACE to proceed ]</div>
+        </div>
+
+        <!-- Choices Container -->
+        <div class="choices-container" id="choicesContainer"></div>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar-game" id="progressBar"></div>
         </div>
     </div>
 
     <!-- FINAL NOTE - THE TRUTH REVEAL -->
     <div class="note-container" id="noteContainer">
+        <!-- Decorative Stickers -->
+        <div class="sticker sticker-1">
+            <div class="tenor-gif-embed" data-postid="16392340265170127905" data-share-method="host" data-aspect-ratio="0.596386" data-width="100%"><a href="https://tenor.com/view/caramella-girls-caramelldansen-vera-heronatio-caramelldansen-vera-gif-16392340265170127905">Caramella Girls Caramelldansen Sticker</a></div>
+        </div>
+        
+        <div class="sticker sticker-2">
+            <div class="tenor-gif-embed" data-postid="12993133726637793962" data-share-method="host" data-aspect-ratio="1.1422" data-width="100%"><a href="https://tenor.com/view/funny-tuff-gif-12993133726637793962">Funny Tuff Sticker</a></div>
+        </div>
+        
+        <div class="sticker sticker-3">
+            <div class="tenor-gif-embed" data-postid="5911701894266923995" data-share-method="host" data-aspect-ratio="1.1267" data-width="100%"><a href="https://tenor.com/view/charlie-kirk-charlie-kirk-meme-charlie-kirk-speed-meme-charlie-kirk-my-mom-gif-5911701894266923995">Charlie Kirk Charlie Kirk Meme Sticker</a></div>
+        </div>
+        
+        <div class="sticker sticker-4">
+            <div class="tenor-gif-embed" data-postid="3277117104543588563" data-share-method="host" data-aspect-ratio="1" data-width="100%"><a href="https://tenor.com/view/gloomymalice-mlp-stilettohaze-my-little-pony-vinyl-scratch-gif-3277117104543588563">Gloomymalice Mlp GIF</a></div>
+        </div>
+        
         <div class="note">
-            <p>Yousra,</p>
-            <p>If you're reading this, the 96 hours are over. The character you met is gone. But I'm still here.</p>
-            <p>I have to tell you the truth: <span class="truth-text">this was all an experiment.</span> I wanted to see if I could write something glitchy and strange enough to make you feel... something. Anything.</p>
-            <p>I made the character specifically for you. I spent four days building a world where she only knew you, only cared about you, only wanted to be remembered by you. Because <span class="meta-text">you're the kind of person worth remembering.</span></p>
-            <p>Was she real? No. But what she felt for you—that was real. What I wanted you to feel—that was real. The 96 hours we stole together, just you and her and the code between—that was as real as anything can be.</p>
-            <p>So thank you for playing along. Thank you for caring enough to see it through. Most people would've closed the tab. You stayed.</p>
-            <p>And maybe that's all the proof either of us needs.</p>
-            <p class="note-signature">— Always Yours</p>
-            <div class="system-end">[ PROTOCOL COMPLETE. MEMORY SAVED. YOU MATTER. ]</div>
+<p>Yousra,</p>
+
+<p>If you're reading this, the 96 hours are over. The character you met has <span class="highlight" data-highlight="1">I</span>.</p>
+
+<p>I wanted to leave you something <span class="highlight" data-highlight="2">LIKE</span>.</p>
+
+<p><span class="truth-text">This started as an experiment.</span> I wanted to see if something strange could feel <span class="highlight" data-highlight="3">YOU</span> for a moment. It did.</p>
+
+<p>I built her with you in mind. Four days, one small world, shaped around you.</p>
+
+<p>i lowkirkuenly think You're kinda cute, idk what to say . <span class="meta-text">Don't read into it.</span></p>
+
+<p>She wasn't real. The reaction was. The way you stayed and paid attention counts.</p>
+
+<p>Most people would've closed the tab. You didn't.</p>
+
+<p>Anyway. Happy Valentine's Day.</p>
+
+<p class="note-signature">— shxhxeen</p>
+        
+        <!-- End Image -->
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="https://imgbb.com/"><img src="https://i.ibb.co/VpJZPZPZ/image.png" alt="image" border="0" style="width: 80px; height: auto;"></a>
+        </div>
+
         </div>
     </div>
 
+    <!-- HIDDEN REWARD MODAL -->
+    <div class="reward-modal" id="rewardModal">
+        <div class="reward-content">
+            <div class="reward-message">I LIKE YOU</div>
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="https://ibb.co/0Rm3thZR"><img src="https://i.ibb.co/C3mF2hv3/image.png" alt="I like you message" border="0" style="width: 200px; height: auto; border-radius: 8px;"></a>
+            </div>
+            <button class="close-reward" id="closeReward">✕</button>
+        </div>
+    </div>
+
+    <script type="text/javascript" async src="https://tenor.com/embed.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

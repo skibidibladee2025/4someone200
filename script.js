@@ -9,55 +9,62 @@
 
 const audioManager = {
     element: null,
+    toggleButton: null,
     isMuted: false,
     volume: 0.3,
+    attemptedPlay: false,
 
     init() {
         this.element = document.getElementById('backgroundMusic');
+        this.toggleButton = document.getElementById('audioToggle');
         if (!this.element) return;
 
         this.element.volume = this.volume;
-        
-        // Unmute the audio element (it starts muted for autoplay compatibility)
         this.element.muted = false;
         
-        // Ensure it plays
-        const playPromise = this.element.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.log('Autoplay failed, waiting for user interaction...');
-            });
-        }
+        // Try to play immediately
+        this.tryPlay();
+        
+        // Add click listener for first user interaction (mobile/strict browsers)
+        document.addEventListener('click', () => this.tryPlay(), { once: true });
+        document.addEventListener('keydown', () => this.tryPlay(), { once: true });
 
         // Handle loop
         this.element.addEventListener('ended', () => {
             this.element.currentTime = 0;
-            this.element.play();
+            this.tryPlay();
         });
-
-        this.createToggleButton();
     },
 
-    createToggleButton() {
-        const button = document.createElement('button');
-        button.className = 'audio-toggle';
-        button.innerHTML = '🔊';
-        button.title = 'Toggle background music';
-        button.addEventListener('click', () => this.toggle());
-        document.body.appendChild(button);
-        this.toggleButton = button;
+    tryPlay() {
+        if (this.attemptedPlay || !this.element) return;
+        this.attemptedPlay = true;
+        
+        const playPromise = this.element.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                console.log('Audio autoplay restricted, will play on interaction');
+                // Retry on next interaction
+                this.attemptedPlay = false;
+            });
+        }
     },
 
     toggle() {
         this.isMuted = !this.isMuted;
         if (this.isMuted) {
             this.element.muted = true;
-            this.toggleButton.innerHTML = '🔇';
-            this.toggleButton.classList.add('muted');
+            if (this.toggleButton) {
+                this.toggleButton.innerHTML = '🔇';
+                this.toggleButton.classList.add('muted');
+            }
         } else {
             this.element.muted = false;
-            this.toggleButton.innerHTML = '🔊';
-            this.toggleButton.classList.remove('muted');
+            if (this.toggleButton) {
+                this.toggleButton.innerHTML = '🔊';
+                this.toggleButton.classList.remove('muted');
+            }
+            this.tryPlay();
         }
     }
 };
@@ -73,7 +80,10 @@ const audioManager = {
 const gameState = {
     day: 1,           // Current day (1-4)
     scene: 0,         // Current scene within the day
-    isTyping: false   // Flag to prevent interaction during text animation
+    isTyping: false,  // Flag to prevent interaction during text animation
+    guiltLevel: 0,    // Player complicity meter (0-100)
+    playerChoices: [], // Track all player choices for meta-narrative
+    currentTypeTimeout: null // Track typing timeout for skip functionality
 };
 
 // ============================================
@@ -88,7 +98,7 @@ const narrative = {
     day1: [
         {
             name: "???",
-            text: "Yousra? I didn't think you'd actually come back. But here you are. You found me."
+            text: "Yousra? what the helly are you doing here BRO."
         },
         {
             name: "???",
@@ -244,8 +254,128 @@ const elements = {
     nameBox: document.getElementById('nameBox'),
     textContent: document.getElementById('textContent'),
     textBox: document.getElementById('textBox'),
-    sprite: document.getElementById('sprite')
+    sprite: document.getElementById('sprite'),
+    choicesContainer: document.getElementById('choicesContainer'),
+    dayIndicator: document.getElementById('dayIndicator'),
+    progressBar: document.getElementById('progressBar'),
+    audioToggle: document.getElementById('audioToggle')
 };
+
+// ============================================
+// CHOICE SYSTEM
+// ============================================
+
+/**
+ * Displays narrative choices on screen
+ * @param {Array} choices - Array of choice objects with text and value
+ */
+function displayChoices(choices) {
+    elements.choicesContainer.innerHTML = '';
+    choices.forEach((choice, index) => {
+        const button = document.createElement('button');
+        button.className = 'choice-button';
+        button.textContent = `→ ${choice.text}`;
+        button.dataset.guiltCost = choice.guiltCost || 0;
+        button.dataset.consequence = choice.consequence || '';
+        button.onclick = () => selectChoice(choice.value, choice.guiltCost, choice.consequence);
+        elements.choicesContainer.appendChild(button);
+    });
+}
+
+/**
+ * Handle player's choice selection - adds to guilt system
+ * @param {string} value - The choice identifier
+ * @param {number} guiltCost - How much guilt this choice adds (0-30)
+ * @param {string} consequence - Consequence message to display
+ */
+function selectChoice(value, guiltCost = 0, consequence = '') {
+    gameState.playerChoices.push(value);
+    gameState.guiltLevel = Math.min(100, gameState.guiltLevel + guiltCost);
+    updateGuiltMeter();
+    elements.choicesContainer.innerHTML = '';
+    
+    // Show choice consequence if available
+    if (consequence) {
+        showConsequence(consequence, guiltCost);
+    }
+    
+    next();
+}
+
+/**
+ * Display consequence message for player choice
+ */
+function showConsequence(text, guiltCost) {
+    const consequenceDiv = document.createElement('div');
+    consequenceDiv.className = 'choice-consequence';
+    consequenceDiv.innerHTML = `<div class="consequence-text">${text}</div>`;
+    if (guiltCost > 0) {
+        consequenceDiv.innerHTML += `<div class="consequence-guilt">+${guiltCost} GUILT</div>`;
+    }
+    elements.textBox.appendChild(consequenceDiv);
+    
+    // Remove after delay
+    setTimeout(() => {
+        consequenceDiv.remove();
+    }, 2000);
+}
+
+/**
+ * Updates the guilt/complicity meter on screen
+ */
+function updateGuiltMeter() {
+    const guiltMeter = document.getElementById('guiltMeter');
+    const guiltFill = document.getElementById('guiltFill');
+    
+    if (gameState.guiltLevel > 0) {
+        guiltMeter.classList.add('visible');
+        guiltFill.style.width = gameState.guiltLevel + '%';
+    }
+}
+
+/**
+ * Apply glitch effect to text box - creates psychological horror
+ */
+function applyGlitchEffect() {
+    elements.textBox.classList.add('corrupting');
+    setTimeout(() => {
+        elements.textBox.classList.remove('corrupting');
+    }, 500);
+}
+
+/**
+ * Apply distortion effect - makes reality feel unreliable
+ */
+function applyDistortion() {
+    elements.gameScreen.classList.add('distorted');
+    setTimeout(() => {
+        elements.gameScreen.classList.remove('distorted');
+    }, 300);
+}
+
+/**
+ * Make the game break the fourth wall
+ */
+function fourthWallBreak() {
+    const breakText = document.createElement('div');
+    breakText.style.cssText = `
+        position: fixed;
+        top: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff00de;
+        color: #000;
+        padding: 10px 20px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 999;
+        animation: slideDown 0.5s ease;
+    `;
+    breakText.innerHTML = '⚠ SYSTEM AWARE OF EXTERNAL INPUT ⚠';
+    document.body.appendChild(breakText);
+    
+    setTimeout(() => breakText.remove(), 3000);
+}
 
 // ============================================
 // TYPEWRITER EFFECT HANDLER
@@ -260,19 +390,49 @@ function typeWriter(text, callback) {
     gameState.isTyping = true;
     let index = 0;
     elements.textContent.innerHTML = "";
+    const skipButton = document.getElementById('skipText');
+    if (skipButton) skipButton.disabled = false;
 
     function type() {
         if (index < text.length) {
             elements.textContent.innerHTML += text.charAt(index);
             index++;
-            setTimeout(type, 40); // 40ms per character for natural pace
+            gameState.currentTypeTimeout = setTimeout(type, 40); // 40ms per character for natural pace
         } else {
             gameState.isTyping = false;
+            if (skipButton) skipButton.disabled = true;
             if (callback) callback();
         }
     }
 
     type();
+}
+
+/**
+ * Skips the typewriter effect and displays all remaining text instantly
+ */
+function skipText() {
+    if (!gameState.isTyping) return;
+    
+    // Clear the timeout
+    if (gameState.currentTypeTimeout) {
+        clearTimeout(gameState.currentTypeTimeout);
+        gameState.currentTypeTimeout = null;
+    }
+    
+    // Display all text immediately
+    const dayKey = `day${gameState.day}`;
+    const data = narrative[dayKey][gameState.scene];
+    elements.textContent.innerHTML = data.text;
+    
+    gameState.isTyping = false;
+    const skipButton = document.getElementById('skipText');
+    if (skipButton) skipButton.disabled = true;
+    
+    // Show choices if available
+    if (data.choices && data.choices.length > 0) {
+        displayChoices(data.choices);
+    }
 }
 
 // ============================================
@@ -285,9 +445,30 @@ function typeWriter(text, callback) {
 function render() {
     const dayKey = `day${gameState.day}`;
     const data = narrative[dayKey][gameState.scene];
+    const totalScenes = narrative[dayKey].length;
 
     elements.nameBox.innerText = data.name;
-    typeWriter(data.text);
+    
+    // Update progress bar
+    const totalProgress = (gameState.day - 1) * 3 + gameState.scene + 1;
+    const maxProgress = 4 * 3;
+    const progressPercent = (totalProgress / maxProgress) * 100;
+    elements.progressBar.style.width = progressPercent + '%';
+    
+    // Update day indicator
+    elements.dayIndicator.innerText = `Day ${gameState.day} | Scene ${gameState.scene + 1}/${totalScenes}`;
+    
+    // Apply special effects if narrative requires it
+    if (data.glitch) applyGlitchEffect();
+    if (data.fourthWall) fourthWallBreak();
+    if (data.distorted) applyDistortion();
+    
+    typeWriter(data.text, () => {
+        // Show choices if available
+        if (data.choices && data.choices.length > 0) {
+            displayChoices(data.choices);
+        }
+    });
 }
 
 // ============================================
@@ -353,6 +534,42 @@ function showSystemLog() {
  * Initializes the game on window load
  * Displays boot sequence and renders first scene
  */
+
+// ============================================
+// HIGHLIGHT TRACKING - I LIKE YOU EASTER EGG
+// ============================================
+
+const highlightTracker = {
+    clicked: new Set(),
+    totalHighlights: 3,
+    
+    init() {
+        const highlights = document.querySelectorAll('.highlight');
+        highlights.forEach(highlight => {
+            highlight.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const highlightId = highlight.getAttribute('data-highlight');
+                this.clicked.add(highlightId);
+                
+                // Visual feedback
+                highlight.style.opacity = '0.6';
+                
+                // Check if all highlights are clicked
+                if (this.clicked.size === this.totalHighlights) {
+                    this.showReward();
+                }
+            });
+        });
+    },
+    
+    showReward() {
+        const rewardModal = document.getElementById('rewardModal');
+        if (rewardModal) {
+            rewardModal.classList.add('visible');
+        }
+    }
+};
+
 window.addEventListener('load', async () => {
     // Initialize audio manager
     audioManager.init();
@@ -368,6 +585,9 @@ window.addEventListener('load', async () => {
 
     // Render first scene
     render();
+
+    // Initialize highlight tracking for Easter egg
+    highlightTracker.init();
 });
 
 // ============================================
@@ -378,3 +598,55 @@ window.addEventListener('load', async () => {
  * Click handler for text box to proceed through scenes
  */
 elements.textBox.addEventListener('click', next);
+
+/**
+ * Audio toggle button handler
+ */
+if (elements.audioToggle) {
+    elements.audioToggle.addEventListener('click', () => audioManager.toggle());
+    
+    // Skip text button
+    const skipButton = document.getElementById('skipText');
+    if (skipButton) {
+        skipButton.addEventListener('click', skipText);
+        skipButton.disabled = true; // Disabled until typing starts
+    }
+}
+
+/**
+ * Reward modal close button
+ */
+const rewardModal = document.getElementById('rewardModal');
+const closeRewardBtn = document.getElementById('closeReward');
+if (closeRewardBtn) {
+    closeRewardBtn.addEventListener('click', () => {
+        if (rewardModal) {
+            rewardModal.classList.remove('visible');
+        }
+    });
+}
+
+// Click outside reward modal to close
+if (rewardModal) {
+    rewardModal.addEventListener('click', (e) => {
+        if (e.target === rewardModal) {
+            rewardModal.classList.remove('visible');
+        }
+    });
+}
+
+/**
+ * Keyboard support for game progression
+ * - SPACE or ENTER: Proceed to next scene
+ * - M: Toggle music
+ */
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        next();
+    } else if (e.code === 'KeyM') {
+        audioManager.toggle();
+    } else if (e.code === 'KeyS') {
+        skipText();
+    }
+});
